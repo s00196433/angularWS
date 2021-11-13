@@ -33,3 +33,6 @@ describe('AppComponent', () => {
     expect(compiled.querySelector('.content span')?.textContent).toContain('clientApp2021 app is running!');
   });
 });
+
+
+
