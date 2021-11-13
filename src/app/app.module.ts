@@ -9,7 +9,7 @@ import { SampleFormComponent } from './book2/sample-form/sample-form.component';
 import { BookRowComponent} from './book2/book-row/book-row.component';
 import { BookDetailsComponent} from './book2/book-details/book-details.component';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
-
+import { HttpClientModule } from '@angular/common/http';
 
 
 @NgModule({
@@ -26,7 +26,8 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
     BrowserModule,
     AppRoutingModule,
     ReactiveFormsModule,
-     FormsModule
+     FormsModule,
+     HttpClientModule
   
   ],
   providers: [],
