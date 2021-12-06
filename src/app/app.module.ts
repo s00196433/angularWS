@@ -10,6 +10,10 @@ import { BookRowComponent} from './book2/book-row/book-row.component';
 import { BookDetailsComponent} from './book2/book-details/book-details.component';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
+import { LoginComponent } from './login/login.component';
+import { RegisterComponent } from './register/register.component';
+import { HomeComponent } from './home/home.component';
+import { UsersComponent } from './users/users.component';
 
 
 @NgModule({
@@ -19,7 +23,11 @@ import { HttpClientModule } from '@angular/common/http';
     BookListComponent,
     BookRowComponent,
     BookDetailsComponent,
-    SampleFormComponent
+    SampleFormComponent,
+    LoginComponent,
+    RegisterComponent,
+    HomeComponent,
+    UsersComponent
   ],
 
   imports: [
