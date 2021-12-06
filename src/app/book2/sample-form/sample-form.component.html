@@ -1,23 +1,28 @@
-<form [formGroup]="bookForm" (ngSubmit) = "onSubmit()" >
+<p>book-form works!</p>
 
-    <div>
-        <label for="title"> Title</label>
-        <input id="title" type="text" formControlName="title">
-    </div>
-    <div>
-        <label for="year_written"> Year Written</label>
-        <input id="year_written" type="text" formControlName="year_written">
-    </div>
+<form [formGroup]="bookForm" (ngSubmit) = "onSubmit()" class>
 
-    <button type="submit" [disabled]= "!bookForm.valid" >Submit</button>
-    
-    </form>
+    <button type="button" class="btn-close" aria-label="Close" (click)="closeForm()"></button>
 
-    <div *ngIf="title?.invalid && title?.touched"  class="alert alert-danger" >
-        Title is required and must be at least 4 letters
-    </div>
+<div class="mb-3">
+    <label for="title" class="form-label">Title:</label>
+    <input id="title" type="text" formControlName="title" class="form-control">
+</div>
+<div class="mb-3">
+    <label for="year_written" class="form-label">Year released(in minutes):</label>
+    <input id="year_written" type="number" formControlName="year_written" class="form-control">
+</div>
 
-    <div *ngIf="year_written?.invalid && year_written?.touched"  class="alert alert-danger" >
-        Year is required and must be 4 numbers
-    </div>
-    
+
+<button type="submit" [disabled]= "!bookForm?.valid" class="btn btn-primary" >Submit</button>
+
+<div *ngIf="title?.invalid && title?.touched"  class="alert alert-danger" >
+    Title is required and must be more than 1 characters
+</div>
+<div *ngIf="year_written?.invalid && year_written?.touched"  class="alert alert-danger" >
+    Year released is required and must be 2024 or earlier
+</div>
+
+
+
+</form>
