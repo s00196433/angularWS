@@ -10,8 +10,151 @@ import { environment } from 'src/environments/environment';
 })
 export class UserService {
 
-  private apiURI: string = 'http://localhost:3000';
+  private apiURI: string = environment.apiUrl;
+  private userSubject: BehaviorSubject<User | null>;
+  public user: Observable<User | null>;
 
+
+
+  constructor(private http: HttpClient) {
+
+    const storedUser: User = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    console.log('User' + storedUser);
+
+    this.userSubject = new BehaviorSubject<User | null>(JSON.parse(localStorage.getItem('currentUser') || '{}'));
+    this.user = this.userSubject.asObservable();
+
+    if (this.userSubject.value == null || this.userSubject.value._id == undefined) {
+      this.userSubject.next(null)
+    }
+
+  }
+
+  public get userValue(): User | null {
+    return this.userSubject.value;
+  }
+
+
+  createUser(user: User): Observable<User> {
+
+    const uri: string = this.apiURI + '/users';
+
+    return this.http.post<User>(uri, user).
+      pipe(
+        catchError(this.handleError)
+      );
+  }
+
+  getUsers(): Observable<User[]> {
+
+    return this.http.get<User[]>(`${this.apiURI}/users`)
+      .pipe(
+        catchError(this.handleError)
+      )
+  }
+
+
+  public login(email: string, password: string): Observable<any> {
+
+    return this.http.post<any>(`${this.apiURI}/auth`, { email: email, password: password },
+      { withCredentials: true }).
+      pipe(map(user => {
+
+        // get the expiry time from the JWT
+        const payload = JSON.parse(atob(user.accessToken.split('.')[1]));
+        const expires = new Date(payload.exp * 1000);
+
+
+        localStorage.setItem('currentUser', JSON.stringify(user))
+        this.userSubject.next(user);
+
+        this.startAuthenticateTimer(expires);
+        return user;
+      }
+      ))
+  }
+
+  logout() {
+    // remove user from local storage to log user out
+    localStorage.removeItem('currentUser');
+    this.userSubject.next(null);
+  }
+  private getNewAccessToken(): Observable<any> {
+
+    // note the withCredentials below means that cookies will be sent to the server
+
+    return this.http.post<any>(`${this.apiURI}/auth/refresh`, {userid : this.userValue?._id},
+      { withCredentials: true }).
+      pipe(map(user => {
+        console.log('here')
+
+        // get the expiry time from the JWT
+        const payload = JSON.parse(atob(user.accessToken.split('.')[1]));
+        const expires = new Date(payload.exp * 1000);
+
+        localStorage.setItem('currentUser', JSON.stringify(user))
+        this.userSubject.next(user);
+
+        this.startAuthenticateTimer(expires);
+        return user;
+      }),
+        catchError(this.handleError))
+  }
+
+
+  private handleError(error: HttpErrorResponse) {
+    if (error.error instanceof ErrorEvent) {
+      // A client-side or network error occurred. Handle it accordingly.
+      console.error('An error occurred:', error.error.message);
+    } else {
+      // The backend returned an unsuccessful response code.
+      // The response body may contain clues as to what went wrong.
+
+
+      console.error(
+        `Backend returned code ${error.status}, ` +
+        `body was: ${JSON.stringify(error.error)}`);
+
+
+
+      // question over how much information you want to give to the end-user
+      // it depends on who will be using the system
+      // this information would not be returned in a public interface but might in an intranet.
+
+      if (error.status == 412) {
+        return throwError('412 Error' + JSON.stringify(error.error))
+      }
+
+      if (error.status == 401){
+        localStorage.removeItem('currentUser');
+        this.userSubject.next(null);
+        return throwError('401 Error' + JSON.stringify(error.error))
+      }
+
+    }
+    // Return an observable with a user-facing error message.
+    return throwError(
+      'Something bad happened; please try again later.');
+  }
+
+  private authenticateTimeout?: any;
+
+  private startAuthenticateTimer(expires: Date) {
+    console.log(expires);
+
+    // set a timeout to re-authenticate with the api one minute before the token expires
+
+    const timeout = expires.getTime() - Date.now() - (60 * 1000);
+
+    this.authenticateTimeout = setTimeout(() => {
+      console.log('timer gone ');
+      this.getNewAccessToken().subscribe();
+      // this.logout();
+    }, timeout);
+  }
+
+ // private apiURI: string = 'http://localhost:3000';
+ /* cat private apiURI: string = 'https://localhost:8080';
   private userSubject: BehaviorSubject<User|null>;
   public user: Observable<User|null>;
 
@@ -53,7 +196,8 @@ export class UserService {
 
      public login(email: string, password: string): Observable<any> {
 
-      return this.http.post<any>(`${this.apiURI}/auth`, { email: email, password: password }).
+      return this.http.post<any>(`${this.apiURI}/auth`, { email: email, password: password },
+      {withCredentials:true}).
       pipe(map(user => {
        localStorage.setItem('currentUser', JSON.stringify(user))
        this.userSubject.next(user);
@@ -98,70 +242,47 @@ export class UserService {
     // Return an observable with a user-facing error message.
     return throwError(
       'Something bad happened; please try again later.');
-  }
+  } cat */
 
- /* private apiURI: string = 'http://localhost:3000';
+  /*-----------------------------------------------------------*/
 
+  /*cat private getNewAccessToken(): Observable<any> {
 
+    // note the withCredentials below means that cookies will be sent to the server
 
-  constructor(private http: HttpClient) {
+    return this.http.post<any>(`${this.apiURI}/auth/refresh`, {userid : this.userValue?._id},
+      { withCredentials: true }).
+      pipe(map(user => {
+        console.log('here')
 
-  
-  }
+        // get the expiry time from the JWT
+        const payload = JSON.parse(atob(user.accessToken.split('.')[1]));
+        const expires = new Date(payload.exp * 1000);
 
-  createUser(user: User): Observable<User> {
+        localStorage.setItem('currentUser', JSON.stringify(user))
+        this.userSubject.next(user);
 
-   const uri: string = this.apiURI + '/users';
+        this.startAuthenticateTimer(expires);
+        return user;
+      }),
+        catchError(this.handleError))
+  }  cat */
 
-    return this.http.post<User>(uri, user).
-      pipe(
-        catchError(this.handleError)
-      );
-  }
+  /*--------------------------------------------------------------------------*/
+ /* cat private authenticateTimeout?: any;
 
-  getUsers(): Observable<User[]> {
+  private startAuthenticateTimer(expires: Date) {
+    console.log(expires);
 
-    console.log("get Users called");
+    // set a timeout to re-authenticate with the api one minute before the token expires
 
-    return this.http.get<User[]>(`${this.apiURI}/users`)
-      .pipe(
-        catchError(this.handleError)
-      )
-  }
+    const timeout = expires.getTime() - Date.now() - (60 * 1000);
 
-  private handleError(error: HttpErrorResponse) {
-    if (error.error instanceof ErrorEvent) {
-      // A client-side or network error occurred. Handle it accordingly.
-      console.error('An error occurred:', error.error.message);
-    } else {
-      // The backend returned an unsuccessful response code.
-      // The response body may contain clues as to what went wrong.
+    this.authenticateTimeout = setTimeout(() => {
+      console.log('timer gone ');
+      this.getNewAccessToken().subscribe();
+      // this.logout();
+    }, timeout);
+  } cat*/
 
-
-      console.error(
-        `Backend returned code ${error.status}, ` +
-        `body was: ${JSON.stringify(error.error)}`);
-
-
-
-      // question over how much information you want to give to the end-user
-      // it depends on who will be using the system
-      // this information would not be returned in a public interface but might in an intranet.
-
-      if (error.status == 412) {
-        return throwError('412 Error' + JSON.stringify(error.error))
-      }
-
-    }
-    // Return an observable with a user-facing error message.
-    return throwError(
-      'Something bad happened; please try again later.');
-  } */
-
-
-  
-
-
-
-  
 }

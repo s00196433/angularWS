@@ -9,11 +9,20 @@ import { SampleFormComponent } from './book2/sample-form/sample-form.component';
 import { BookRowComponent} from './book2/book-row/book-row.component';
 import { BookDetailsComponent} from './book2/book-details/book-details.component';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { LoginComponent } from './user/login/login.component';
 import { RegisterComponent } from './user/register/register.component';
 import { HomeComponent } from './home/home.component';
 import { UsersComponent } from './user/users/users.component';
+import { JwtinterceptorService } from './helper/jwtinterceptor.service';
+
+
+import { ErrorInterceptor } from './helper/errorinterceptor';
+import { JwtInterceptor } from './helper/jwtinterceptor';
+//import { JwtInterceptor } from './helper/jwtinterceptor';
+
+
+
 
 
 @NgModule({
@@ -38,7 +47,18 @@ import { UsersComponent } from './user/users/users.component';
      HttpClientModule
   
   ],
-  providers: [],
-  bootstrap: [AppComponent]
+  /*providers: [],
+  bootstrap: [AppComponent] */
+ /* providers: [
+    {provide: HTTP_INTERCEPTORS, useClass: JwtinterceptorService, multi: true}
+   ],
+   bootstrap: [AppComponent] */
+
+   providers: [
+    {provide: HTTP_INTERCEPTORS, useClass: JwtinterceptorService, multi: true},
+    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true }
+   ],
+   bootstrap: [AppComponent]
+ 
 })
 export class AppModule { }
