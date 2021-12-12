@@ -152,6 +152,7 @@ export class UserService {
       // this.logout();
     }, timeout);
   }
+}
 
  // private apiURI: string = 'http://localhost:3000';
  /* cat private apiURI: string = 'https://localhost:8080';
@@ -285,4 +286,4 @@ export class UserService {
     }, timeout);
   } cat*/
 
-}
+
